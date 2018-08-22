@@ -6,8 +6,8 @@ Created on Mon Aug 20 11:53:24 2018
 @author: jezequel
 """
 from functools import reduce
-import matplotlib.pyplot as plt
 from operator import itemgetter
+import matplotlib.pyplot as plt
 
 class RegularDecisionTree:
     """
@@ -104,16 +104,23 @@ class RegularDecisionTree:
                 node = self.NextSortedNode(False)
         return node
 
-    def DrawTree(self, valid_nodes, complete_graph_layout = True):
+    def DrawTree(self, valid_nodes,
+                 complete_graph_layout=True,
+                 plot=False):
         """
         Draws decision tree
+
+        :param valid_nodes: List of tuples that represents nodes to draw
+        :param complete_graph_layout: Boolean
+        :param plot: Boolean to directly plot or not
         """
         if valid_nodes:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            
+            if plot:
+                fig = plt.figure()
+                ax = fig.add_subplot(111)
+
             tree_plot_data = []
-            
+
             nodes = list(set(valid_nodes))
             nodes.sort(key=itemgetter(*range(len(self.np))))
             up_nodes = []
@@ -125,7 +132,7 @@ class RegularDecisionTree:
             while not finished:
                 for i, node in enumerate(nodes):
                     y = y_increment*j
-                    if len(node):
+                    if node:
                         # If node has parent
                         parent = node[:-1]
                         links.append([parent, node])
@@ -133,11 +140,12 @@ class RegularDecisionTree:
                         # Else, we reached root
                         finished = True
                     if parent not in up_nodes:
-                        if len(up_nodes) and not complete_graph_layout:
-                            # Add positions to parent
-                            pos_children = [positions[link[1]][0] for link in links if up_nodes[-1] in link]
+                        if up_nodes and not complete_graph_layout:
+                            # Add positions to previous parent
+                            p = up_nodes[-1]
+                            pos_children = [positions[lk[1]][0] for lk in links if p in lk]
                             pos_parent = (max(pos_children) + min(pos_children))/2
-                            positions[up_nodes[-1]] = (pos_parent, y + y_increment)
+                            positions[p] = (pos_parent, y + y_increment)
                         up_nodes.append(parent)
                     if complete_graph_layout:
                         if len(node) == len(self.np):
@@ -151,43 +159,44 @@ class RegularDecisionTree:
 
                         positions[node] = (x, y)
                         point = {'type' : 'circle',
-                                  'cx' : x,
-                                  'cy' : y,
-                                  'r' : 1,
-                                  'color' : [0, 0, 0],
-                                  'size' : 1,
-                                  'dash' : 'none'}
+                                 'cx' : x,
+                                 'cy' : y,
+                                 'r' : 1,
+                                 'color' : [0, 0, 0],
+                                 'size' : 1,
+                                 'dash' : 'none'}
                         tree_plot_data.append(point)
-                        ax.plot(point['cx'],
-                                point['cy'],
-                                color = point['color'])
+                        if plot:
+                            ax.plot(point['cx'],
+                                    point['cy'],
+                                    color=point['color'])
                     else: # Minimal layout graph
-                         if len(node) == len(self.np):
-                             # Add position to all the leafs
-                             x = i
-                             positions[node] = (x, y)
-                             point = {'type' : 'circle',
-                                      'cx' : x,
-                                      'cy' : y,
-                                      'r' : 1,
-                                      'color' : [0, 0, 0],
-                                      'size' : 1,
-                                      'dash' : 'none'}
-                             tree_plot_data.append(point)
-                             print(point)
-                             ax.plot(point['cx'],
-                                     point['cy'],
-                                     color = point['color'])
+                        if len(node) == len(self.np):
+                            # Add position to all the leafs
+                            x = i
+                            positions[node] = (x, y)
+                            point = {'type' : 'circle',
+                                     'cx' : x,
+                                     'cy' : y,
+                                     'r' : 1,
+                                     'color' : [0, 0, 0],
+                                     'size' : 1,
+                                     'dash' : 'none'}
+                            tree_plot_data.append(point)
+                            if plot:
+                                ax.plot(point['cx'],
+                                        point['cy'],
+                                        color=point['color'])
                 if not complete_graph_layout:
                     # Add position to the last parent of the line
                     pos_children = [positions[link[1]][0] for link in links if up_nodes[-1] in link]
                     pos_parent = (max(pos_children) + min(pos_children))/2
                     positions[up_nodes[-1]] = (pos_parent, y+y_increment)
                 j += 1
-    
+
                 nodes = up_nodes
                 up_nodes = []
-    
+
             for link in links:
                 parent, node = link
                 xp, yp = positions[parent]
@@ -203,22 +212,22 @@ class RegularDecisionTree:
                            'marker' : '',
                            'size' : 1}
                 tree_plot_data.append(element)
-        
-                ax.plot([element['data'][0], element['data'][2]],
-                        [element['data'][1], element['data'][3]],
-                        color = element['color'],
-                        marker = element['marker'],
-                        linewidth = element['stroke_width'])
-            
+
+                if plot:
+                    ax.plot([element['data'][0], element['data'][2]],
+                            [element['data'][1], element['data'][3]],
+                            color=element['color'],
+                            marker=element['marker'],
+                            linewidth=element['stroke_width'])
+
             return tree_plot_data
-        
+
         else:
             print('valid_nodes is empty')
 
 class DecisionTree:
     """
     Create a general decision tree object
-
     """
     def __init__(self):
         self.current_node = []
@@ -271,7 +280,12 @@ class DecisionTree:
         except IndexError:
             self.np.append(np_node)
         self.current_depth_np_known = True
-        
+
 def Prod(vector):
-    prod = reduce(lambda x, y : x*y, vector)
+    """
+    Operate products of each elements of given vector
+
+    :param vector: List of numbers
+    """
+    prod = reduce(lambda x, y: x*y, vector)
     return prod
