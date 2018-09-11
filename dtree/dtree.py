@@ -5,9 +5,9 @@ Created on Mon Aug 20 11:53:24 2018
 
 @author: jezequel
 """
-from functools import reduce
 from operator import itemgetter
 import matplotlib.pyplot as plt
+import numpy as npy
 
 class RegularDecisionTree:
     """
@@ -104,7 +104,8 @@ class RegularDecisionTree:
                 node = self.NextSortedNode(False)
         return node
 
-    def DrawTree(self, valid_nodes,
+    def PlotData(self,
+                 valid_nodes,
                  complete_graph_layout=True,
                  plot=False):
         """
@@ -114,116 +115,89 @@ class RegularDecisionTree:
         :param complete_graph_layout: Boolean
         :param plot: Boolean to directly plot or not
         """
-        if valid_nodes:
-            if plot:
-                fig = plt.figure()
-                ax = fig.add_subplot(111)
+        tree_plot_data = []
 
-            tree_plot_data = []
+        nodes = list(set(valid_nodes))
+        nodes.sort(key=itemgetter(*range(len(self.np))))
+        up_nodes = []
+        y_positions = [10*j for j in range(len(self.np)+2)]
+        j = 0
+        positions = {}
+        links = []
+        while j <= len(self.np):
+            for i, node in enumerate(nodes):
+                parent = node[:-1]
+                links.append([parent, node])
 
-            nodes = list(set(valid_nodes))
-            nodes.sort(key=itemgetter(*range(len(self.np))))
-            up_nodes = []
-            finished = False
-            j = 0
-            y_increment = 10
-            positions = {}
-            links = []
-            while not finished:
-                for i, node in enumerate(nodes):
-                    y = y_increment*j
-                    if node:
-                        # If node has parent
-                        parent = node[:-1]
-                        links.append([parent, node])
+                if parent not in up_nodes:
+                    if up_nodes and not complete_graph_layout:
+                        # Add positions to previous parent
+                        p = up_nodes[-1]
+                        x = PositionParent(p, links, positions)
+                        positions[p] = (x, y_positions[j+1])
+                        tree_plot_data.append({'type' : 'circle',
+                                               'cx' : x,
+                                               'cy' : y_positions[j+1],
+                                               'r' : 1,
+                                               'color' : [0, 0, 0],
+                                               'size' : 1,
+                                               'dash' : 'none'})
+                    up_nodes.append(parent)
+                if complete_graph_layout:
+                    if len(node) == len(self.np):
+                        r = range(len(node) - 1)
+                        offset = node[-1]
                     else:
-                        # Else, we reached root
-                        finished = True
-                    if parent not in up_nodes:
-                        if up_nodes and not complete_graph_layout:
-                            # Add positions to previous parent
-                            p = up_nodes[-1]
-                            pos_children = [positions[lk[1]][0] for lk in links if p in lk]
-                            pos_parent = (max(pos_children) + min(pos_children))/2
-                            positions[p] = (pos_parent, y + y_increment)
-                        up_nodes.append(parent)
-                    if complete_graph_layout:
-                        if len(node) == len(self.np):
-                            r = range(len(node) - 1)
-                            offset = node[-1]
-                        else:
-                            r = range(len(node))
-                            offset = (Prod(self.np[-j:]) - 1)/2
-                        start_pos = sum([Prod(self.np[k+1:])*node[k] for k in r])
-                        x = start_pos + offset
+                        r = range(len(node))
+                        offset = (npy.prod(self.np[-j:]) - 1)/2
+                    start_pos = sum([npy.prod(self.np[k+1:])*node[k] for k in r])
+                    x = start_pos + offset
 
-                        positions[node] = (x, y)
-                        point = {'type' : 'circle',
-                                 'cx' : x,
-                                 'cy' : y,
-                                 'r' : 1,
-                                 'color' : [0, 0, 0],
-                                 'size' : 1,
-                                 'dash' : 'none'}
-                        tree_plot_data.append(point)
-                        if plot:
-                            ax.plot(point['cx'],
-                                    point['cy'],
-                                    color=point['color'])
-                    else: # Minimal layout graph
-                        if len(node) == len(self.np):
-                            # Add position to all the leafs
-                            x = i
-                            positions[node] = (x, y)
-                            point = {'type' : 'circle',
-                                     'cx' : x,
-                                     'cy' : y,
-                                     'r' : 1,
-                                     'color' : [0, 0, 0],
-                                     'size' : 1,
-                                     'dash' : 'none'}
-                            tree_plot_data.append(point)
-                            if plot:
-                                ax.plot(point['cx'],
-                                        point['cy'],
-                                        color=point['color'])
-                if not complete_graph_layout:
-                    # Add position to the last parent of the line
-                    pos_children = [positions[link[1]][0] for link in links if up_nodes[-1] in link]
-                    pos_parent = (max(pos_children) + min(pos_children))/2
-                    positions[up_nodes[-1]] = (pos_parent, y+y_increment)
-                j += 1
+                    positions[node] = (x, y_positions[j])
+                    tree_plot_data.append({'type' : 'circle',
+                                           'cx' : x,
+                                           'cy' : y_positions[j],
+                                           'r' : 1,
+                                           'color' : [0, 0, 0],
+                                           'size' : 1,
+                                           'dash' : 'none'})
 
-                nodes = up_nodes
-                up_nodes = []
+                else: # Minimal layout graph
+                    if len(node) == len(self.np):
+                        # Add position to all the leafs
+                        x = i
+                        positions[node] = (x, y_positions[j])
+                        tree_plot_data.append({'type' : 'circle',
+                                               'cx' : x,
+                                               'cy' : y_positions[j],
+                                               'r' : 1,
+                                               'color' : [0, 0, 0],
+                                               'size' : 1,
+                                               'dash' : 'none'})
 
-            for link in links:
-                parent, node = link
-                xp, yp = positions[parent]
-                xn, yn = positions[node]
-                element = {'type' : 'line',
-                           'data' : [xp,
-                                     yp,
-                                     xn,
-                                     yn],
-                           'color' : [0, 0, 0],
-                           'dash' : 'none',
-                           'stroke_width' : 1,
-                           'marker' : '',
-                           'size' : 1}
-                tree_plot_data.append(element)
+            if not complete_graph_layout:
+                # Add position to the last parent of the line
+                p = up_nodes[-1]
+                x = PositionParent(p, links, positions)
+                positions[p] = (x, y_positions[j+1])
+                tree_plot_data.append({'type' : 'circle',
+                                       'cx' : x,
+                                       'cy' : y_positions[j+1],
+                                       'r' : 1,
+                                       'color' : [0, 0, 0],
+                                       'size' : 1,
+                                       'dash' : 'none'})
+            j += 1
 
-                if plot:
-                    ax.plot([element['data'][0], element['data'][2]],
-                            [element['data'][1], element['data'][3]],
-                            color=element['color'],
-                            marker=element['marker'],
-                            linewidth=element['stroke_width'])
+            nodes = up_nodes
+            up_nodes = []
 
-            return tree_plot_data
+        tree_plot_data.extend(CreateLinks(links, positions))
 
-        else:
-            print('valid_nodes is empty')
+        if plot:
+            Plot(tree_plot_data)
+
+        return tree_plot_data
 
 class DecisionTree:
     """
@@ -281,11 +255,48 @@ class DecisionTree:
             self.np.append(np_node)
         self.current_depth_np_known = True
 
-def Prod(vector):
-    """
-    Operate products of each elements of given vector
+def PositionParent(parent, links, positions):
+    pos_children = [positions[lk[1]][0] for lk in links if parent in lk]
+    pos_parent = (max(pos_children) + min(pos_children))/2
+    return pos_parent
 
-    :param vector: List of numbers
+def CreateLinks(links, positions):
+    link_plot_data = []
+    for link in links:
+        parent, node = link
+        xp, yp = positions[parent]
+        xn, yn = positions[node]
+        element = {'type' : 'line',
+                   'data' : [xp,
+                             yp,
+                             xn,
+                             yn],
+                   'color' : [0, 0, 0],
+                   'dash' : 'none',
+                   'stroke_width' : 1,
+                   'marker' : '',
+                   'size' : 1}
+        link_plot_data.append(element)
+    return link_plot_data
+
+def Plot(plot_data):
     """
-    prod = reduce(lambda x, y: x*y, vector)
-    return prod
+    TODO Temporary function
+    In the future, use a PlotData package
+    """
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    for element in plot_data:
+        if element['type'] == 'circle':
+            ax.plot(element['cx'],
+                    element['cy'],
+                    'o',
+                    color=element['color'])
+
+        if element['type'] == 'line':
+            ax.plot([element['data'][0], element['data'][2]],
+                    [element['data'][1], element['data'][3]],
+                    color=element['color'],
+                    marker=element['marker'],
+                    linewidth=element['stroke_width'])
