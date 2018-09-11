@@ -12,7 +12,7 @@ def readme():
         return f.read()
 
 # Import dtree
-setup(name='dtree',
+setup(name='dectree',
       use_scm_version=True,
       setup_requires=['setuptools_scm'],
       description="Tools for decision trees",
@@ -22,5 +22,5 @@ setup(name='dtree',
 #      cmdclass['register']=None,
       author='DessIA',
       author_email='root@dessia.tech',
-      packages=['dtree'],
+      packages=['dectree'],
       install_requires=['networkx'])
