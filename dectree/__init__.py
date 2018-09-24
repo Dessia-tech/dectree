@@ -5,4 +5,4 @@ Created on Mon Aug 20 12:41:33 2018
 
 @author: jezequel
 """
-from .dtree import *
+from .dectree import *

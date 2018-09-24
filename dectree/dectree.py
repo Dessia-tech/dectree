@@ -21,6 +21,12 @@ class RegularDecisionTree:
         self._target_node = [0]*self.n
         self.current_depth = 0
         self.finished = False
+        
+        # total number of leaves on tree
+        self.number_leaves = 1
+        for npi in np:
+            self.number_leaves *= (npi)
+
 
     def _get_current_node(self):
         return self._target_node[:self.current_depth+1]
@@ -103,6 +109,20 @@ class RegularDecisionTree:
             else:
                 node = self.NextSortedNode(False)
         return node
+    
+    def Progress(self, ndigits = 3):
+        """
+        Compute progress, float between 0 (begin) and 1 (finished) with ndigits rounding
+        """
+        nll=0#Number of leaves on the left
+        
+        for ind1, pi in enumerate(self.current_node):
+            nlli = pi
+            for ind2 in range(ind1+1, self.n):
+                nlli *= self.np[ind2]
+            nll += nlli
+        
+        return round(nll/self.number_leaves, ndigits)
 
     def PlotData(self,
                  valid_nodes,
