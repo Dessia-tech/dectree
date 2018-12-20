@@ -240,7 +240,7 @@ class DecisionTree:
 
         :param current_node_viability: boolean
         """
-        if (self.np[self.current_depth] == 0) or (not current_node_viability):
+        if (not current_node_viability) or (self.np[self.current_depth] == 0):
             # Node is a leaf | node is not viable
             # In both cases next node as to be searched upwards
             n = self.current_depth
