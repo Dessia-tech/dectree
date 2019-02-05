@@ -8,6 +8,7 @@ Created on Mon Aug 20 11:53:24 2018
 from operator import itemgetter
 import matplotlib.pyplot as plt
 import numpy as npy
+from copy import copy
 
 class RegularDecisionTree:
     """
@@ -224,7 +225,6 @@ class DecisionTree:
     """
     def __init__(self):
         self.current_node = []
-        self._full_data = {}
         self._data = {}
         self.finished = False
         self.np = []
@@ -236,7 +236,7 @@ class DecisionTree:
     current_depth = property(_get_current_depth)
 
     def _get_data(self):
-        return self._data
+        return self._data[tuple(self.current_node)]
 
     def _set_data(self):
         msg = ('Should not directly set data attribute.\
@@ -252,7 +252,8 @@ class DecisionTree:
         :param current_node_viability: boolean
         """
         ancestors = self.Ancestors()
-        self._data = {tuple(node) : self._full_data[tuple(node)]
+        _data = copy(self._data)
+        self._data = {tuple(node) : _data[tuple(node)]
                       for node in ancestors + [tuple(self.current_node)]}
         if (not current_node_viability) or (self.np[self.current_depth] == 0):
             # Node is a leaf | node is not viable
@@ -276,19 +277,21 @@ class DecisionTree:
                 raise RuntimeError
                 # Going deeper in tree
             self.current_node.append(0)
-
         return self.current_node
 
-    def SetCurrentNodePossibilities(self, np_node, data=None):
+    def SetCurrentNodePossibilities(self, data_list):
         """
         TODO Docstring
         """
+        np_node = len(data_list)
         try:
             self.np[self.current_depth] = np_node
         except IndexError:
             self.np.append(np_node)
 
-        self._full_data[tuple(self.current_node)] = data
+#        for i, data in enumerate(data_list):
+#            child = self.current_node + [i]
+        self._data[tuple(self.current_node)] = data_list
         self.current_depth_np_known = True
 
     def AlreadyVisited(self, node):
