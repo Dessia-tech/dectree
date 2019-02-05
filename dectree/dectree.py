@@ -21,12 +21,11 @@ class RegularDecisionTree:
         self._target_node = [0]*self.n
         self.current_depth = 0
         self.finished = False
-        
+
         # total number of leaves on tree
         self.number_leaves = 1
         for npi in np:
             self.number_leaves *= (npi)
-
 
     def _get_current_node(self):
         return self._target_node[:self.current_depth+1]
@@ -109,19 +108,19 @@ class RegularDecisionTree:
             else:
                 node = self.NextSortedNode(False)
         return node
-    
-    def Progress(self, ndigits = 3):
+
+    def Progress(self, ndigits=3):
         """
         Compute progress, float between 0 (begin) and 1 (finished) with ndigits rounding
         """
-        nll=0#Number of leaves on the left
-        
+        nll = 0#Number of leaves on the left
+
         for ind1, pi in enumerate(self.current_node):
             nlli = pi
             for ind2 in range(ind1+1, self.n):
                 nlli *= self.np[ind2]
             nll += nlli
-        
+
         return round(nll/self.number_leaves, ndigits)
 
     def PlotData(self,
@@ -225,6 +224,8 @@ class DecisionTree:
     """
     def __init__(self):
         self.current_node = []
+        self._full_data = {}
+        self._data = {}
         self.finished = False
         self.np = []
         self.current_depth_np_known = False
@@ -234,12 +235,25 @@ class DecisionTree:
 
     current_depth = property(_get_current_depth)
 
+    def _get_data(self):
+        return self._data
+
+    def _set_data(self):
+        msg = ('Should not directly set data attribute.\
+               Elements are passed via data arguments of SetCurrentNodePossibilities() method')
+        raise RuntimeError(msg)
+
+    data = property(_get_data, _set_data)
+
     def NextNode(self, current_node_viability):
         """
         Selects next node in decision tree if current one is valid
 
         :param current_node_viability: boolean
         """
+        ancestors = self.Ancestors()
+        self._data = {tuple(node) : self._full_data[tuple(node)]
+                      for node in ancestors + [tuple(self.current_node)]}
         if (not current_node_viability) or (self.np[self.current_depth] == 0):
             # Node is a leaf | node is not viable
             # In both cases next node as to be searched upwards
@@ -254,11 +268,8 @@ class DecisionTree:
                     self.np = self.np[:self.current_depth]
                     finished = False
                     break
-                    
-            if finished and self.current_depth_np_known:
-                self.finished = True
-            else:
-                self.finished = False
+
+            self.finished = finished and self.current_depth_np_known
 
         else:
             if not self.current_depth_np_known:
@@ -268,7 +279,7 @@ class DecisionTree:
 
         return self.current_node
 
-    def SetCurrentNodePossibilities(self, np_node):
+    def SetCurrentNodePossibilities(self, np_node, data=None):
         """
         TODO Docstring
         """
@@ -276,7 +287,23 @@ class DecisionTree:
             self.np[self.current_depth] = np_node
         except IndexError:
             self.np.append(np_node)
+
+        self._full_data[tuple(self.current_node)] = data
         self.current_depth_np_known = True
+
+    def AlreadyVisited(self, node):
+        booleans = [node[i] < self.current_node[i] for i in range(len(node[:self.current_depth]))]
+        if any(booleans):
+            return True
+        return False
+
+    def Ancestors(self, node=None):
+        if node is None:
+            node = self.current_node
+        ancestors = [None]*(len(node)-1)
+        for i in range(len(node)-1):
+            ancestors[i] = node[:i+1]
+        return ancestors
 
 def PositionParent(parent, links, positions):
     pos_children = [positions[lk[1]][0] for lk in links if parent in lk]
