@@ -236,7 +236,8 @@ class DecisionTree:
     current_depth = property(_get_current_depth)
 
     def _get_data(self):
-        return self._data[tuple(self.current_node)]
+        
+        return self._data
 
     def _set_data(self):
         msg = ('Should not directly set data attribute.\
@@ -251,10 +252,6 @@ class DecisionTree:
 
         :param current_node_viability: boolean
         """
-        ancestors = self.Ancestors()
-        _data = copy(self._data)
-        self._data = {tuple(node) : _data[tuple(node)]
-                      for node in ancestors + [tuple(self.current_node)]}
         if (not current_node_viability) or (self.np[self.current_depth] == 0):
             # Node is a leaf | node is not viable
             # In both cases next node as to be searched upwards
@@ -277,6 +274,19 @@ class DecisionTree:
                 raise RuntimeError
                 # Going deeper in tree
             self.current_node.append(0)
+
+        ancestors = self.Ancestors()        
+        if ancestors is not None:
+            _data = copy(self._data)
+            self._data = {}
+            for node, node_data in _data.items():
+                already_visited = self.AlreadyVisited(node)
+                ancestor = node in ancestors
+                if ancestor or not already_visited:
+                    self._data[tuple(node)] = node_data
+#            print('node : ', self.current_node, 'ancestors', ancestors)
+#            self._data = {tuple(node) : _data[tuple(node)]
+#                          for node in ancestors + [self.current_node]}
         return self.current_node
 
     def SetCurrentNodePossibilities(self, data_list):
@@ -289,9 +299,10 @@ class DecisionTree:
         except IndexError:
             self.np.append(np_node)
 
-#        for i, data in enumerate(data_list):
-#            child = self.current_node + [i]
-        self._data[tuple(self.current_node)] = data_list
+        for i, data in enumerate(data_list):
+            child = self.current_node + [i]
+#            print(child, tuple(child), data)
+            self._data[tuple(child)] = data
         self.current_depth_np_known = True
 
     def AlreadyVisited(self, node):
@@ -303,10 +314,13 @@ class DecisionTree:
     def Ancestors(self, node=None):
         if node is None:
             node = self.current_node
-        ancestors = [None]*(len(node)-1)
-        for i in range(len(node)-1):
-            ancestors[i] = node[:i+1]
-        return ancestors
+#        ancestors = [None]*(len(node)-1)
+#        for i in range(len(node)-1):
+#            ancestors[i] = node[:i+1]
+        ancestors = [node[:i+1] for i in range(len(node)-1)]
+        if ancestors:
+            return ancestors
+        return None
 
 def PositionParent(parent, links, positions):
     pos_children = [positions[lk[1]][0] for lk in links if parent in lk]
