@@ -289,9 +289,24 @@ class DecisionTree:
 #                          for node in ancestors + [self.current_node]}
         return self.current_node
 
-    def SetCurrentNodePossibilities(self, data_list):
+
+    def SetCurrentNodeNumberPossibilities(self, np_node):
         """
-        TODO Docstring
+        Set number of nodes under the current node
+        :param np_node: an integer representing the number of nodes under the current node
+        """
+        try:
+            self.np[self.current_depth] = np_node
+        except IndexError:
+            self.np.append(np_node)
+
+        self.current_depth_np_known = True
+
+    def SetCurrentNodeDataPossibilities(self, data_list):
+        """
+        Set number of nodes under the current node by giving a list of data
+        The number of nodes under the current node will be the length of the data array
+        :param np_node: a list or tuple of data for each node under
         """
         np_node = len(data_list)
         try:
