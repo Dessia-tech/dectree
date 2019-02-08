@@ -306,7 +306,7 @@ class DecisionTree:
         """
         Set number of nodes under the current node by giving a list of data
         The number of nodes under the current node will be the length of the data array
-        :param np_node: a list or tuple of data for each node under
+        :param data_list: a list or tuple of data for each node under
         """
         np_node = len(data_list)
         try:
