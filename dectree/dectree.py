@@ -17,6 +17,10 @@ class RegularDecisionTree:
     :param np: number of possibilities at each depth
     """
     def __init__(self, np):
+        # Checking consistency
+        if min(np) < 1:
+            raise ValueError('number of possibilities must be strictly positive')
+            
         self.np = np
         self.n = len(np)
         self._target_node = [0]*self.n
@@ -295,6 +299,8 @@ class DecisionTree:
         Set number of nodes under the current node
         :param np_node: an integer representing the number of nodes under the current node
         """
+        if np_node < 0:
+            raise ValueError('Number of possibilities must be positive')
         try:
             self.np[self.current_depth] = np_node
         except IndexError:
@@ -306,7 +312,7 @@ class DecisionTree:
         """
         Set number of nodes under the current node by giving a list of data
         The number of nodes under the current node will be the length of the data array
-        :param np_node: a list or tuple of data for each node under
+        :param data_list: a list or tuple of data for each node under
         """
         np_node = len(data_list)
         try:
