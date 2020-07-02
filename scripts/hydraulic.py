@@ -12,6 +12,7 @@ dt = dectree.DecisionTree()
 composants = [Composant(i) for i in range(6)]
 nb_composants_max = len(composants)
 nb_composants_max_per_edge = 3
+nb_max_edge = 4
 
 solutions = []
 while not dt.finished:
@@ -25,23 +26,26 @@ while not dt.finished:
         current = 0
         for i, node in enumerate(dt.current_node):
             if i == current:
-                list_nb_composants.append(node + 1)
-                current += node + 2
+                list_nb_composants.append(node)
+                current += node + 1
             else:
                 node_composants.append(node)
 
         if len(set(node_composants)) != len(node_composants):
             valid = False
         nb_composants = sum(list_nb_composants)
+
         if valid:
             if nb_composants == nb_composants_max and dt.current_depth == nb_composants + len(list_nb_composants):
                 dt.SetCurrentNodeNumberPossibilities(0)
+            elif len(list_nb_composants) > nb_max_edge:
+                valid = False
             else:
                 if dt.current_depth == nb_composants + len(list_nb_composants):
                     if nb_composants_max - nb_composants > nb_composants_max_per_edge:
                         dt.SetCurrentNodeNumberPossibilities(nb_composants_max_per_edge)
                     else:
-                        dt.SetCurrentNodeNumberPossibilities(nb_composants_max - nb_composants)
+                        dt.SetCurrentNodeNumberPossibilities(nb_composants_max - nb_composants + 1)
                 elif dt.current_depth < nb_composants + len(list_nb_composants):
                     dt.SetCurrentNodeNumberPossibilities(len(composants))
         else:
