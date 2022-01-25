@@ -63,4 +63,5 @@ setup(name='dectree',
       author='DessIA',
       author_email='root@dessia.tech',
       packages=['dectree'],
-      install_requires=['networkx'])
+      install_requires=['numpy',
+                        'matplotlib'])

@@ -5,10 +5,11 @@ Created on Mon Aug 20 11:53:24 2018
 
 @author: jezequel
 """
-from operator import itemgetter
-import matplotlib.pyplot as plt
-import numpy as npy
+
 from copy import copy
+from operator import itemgetter
+import numpy as npy
+import matplotlib.pyplot as plt
 
 class RegularDecisionTree:
     """

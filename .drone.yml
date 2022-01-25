@@ -9,6 +9,12 @@ steps:
   commands:
   - git fetch --tags
   - python setup.py install
+  - pip install coverage
+  - cd tests
+  - coverage run --source dectree ci_tests.py
+  - coverage json
+  - python coverage.py 
+  - coverage report
 
 - name: develop
   image: python:3.8
