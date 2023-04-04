@@ -1,15 +1,29 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Aug 20 11:53:24 2018
-
-@author: jezequel
+Decision trees classes.
 """
 
+import re
+from typing import List
+import warnings
+import functools
 from copy import copy
 from operator import itemgetter
 import numpy as npy
 import matplotlib.pyplot as plt
+
+warnings.simplefilter('once', DeprecationWarning)
+
+def pep8_deprecated(func):
+    new_name = re.sub(r'(?<!^)(?=[A-Z])', '_', func.__name__).lower()
+    @functools.wraps(func)
+    def new_func(*args, **kwargs):
+        warnings.warn(f"{func.__name__} is deprecated and will be remove in version 0.3, use {new_name} instead",
+                      DeprecationWarning)
+        return func(*args, **kwargs)
+    return new_func
+
 
 class RegularDecisionTree:
     """
@@ -17,11 +31,12 @@ class RegularDecisionTree:
 
     :param np: number of possibilities at each depth
     """
-    def __init__(self, np):
+
+    def __init__(self, np: List[List[int]]):
         # Checking consistency
         if min(np) < 1:
             raise ValueError('number of possibilities must be strictly positive')
-            
+ 
         self.np = np
         self.n = len(np)
         self._target_node = [0]*self.n
@@ -38,12 +53,12 @@ class RegularDecisionTree:
 
     current_node = property(_get_current_node)
 
+    @pep8_deprecated
     def NextNode(self, current_node_viability):
-        """
-        Selects next node in decision tree if current one is valid
+        return self.next_node(current_node_viability)
 
-        :param current_node_viability: boolean
-        """
+    def next_node(self, current_node_viability: bool):
+        """Selects next node in decision tree if current one is valid."""
         if current_node_viability:
             self.current_depth += 1
 
@@ -58,8 +73,8 @@ class RegularDecisionTree:
         for k in range(self.n-1):
             pk = self._target_node[self.n-1-k]
             if pk >= self.np[self.n-1-k]:
-                self._target_node[self.n-1-k] = pk%self.np[self.n-1-k]
-                self._target_node[self.n-2-k] += pk//self.np[self.n-1-k]
+                self._target_node[self.n-1-k] = pk % self.np[self.n-1-k]
+                self._target_node[self.n-2-k] += pk // self.np[self.n-1-k]
                 self.current_depth = self.n-2-k
 
         # Return None if finished
@@ -69,7 +84,11 @@ class RegularDecisionTree:
 
         return self.current_node
 
+    @pep8_deprecated
     def NextSortedNode(self, current_node_viability):
+        return self.next_sorted_node(current_node_viability)
+
+    def next_sorted_node(self, current_node_viability):
         """
         TODO Docstring
         """
@@ -84,7 +103,11 @@ class RegularDecisionTree:
                 node = self.NextNode(False)
         return node
 
+    @pep8_deprecated
     def NextUniqueNode(self, current_node_viability):
+        return self.next_unique_node(current_node_viability)
+
+    def next_unique_node(self, current_node_viability: bool):
         """
         TODO Docstring
         """
@@ -99,7 +122,11 @@ class RegularDecisionTree:
                 node = self.NextNode(False)
         return node
 
+    @pep8_deprecated
     def NextSortedUniqueNode(self, current_node_viability):
+        return self.next_sorted_unique_node(current_node_viability)
+
+    def next_sorted_unique_node(self, current_node_viability: bool):
         """
         TODO Docstring
         """
@@ -115,11 +142,15 @@ class RegularDecisionTree:
                 node = self.NextSortedNode(False)
         return node
 
+    @pep8_deprecated
     def Progress(self, ndigits=3):
+        return self.progress()
+
+    def progress(self, ndigits: int = 3):
         """
-        Compute progress, float between 0 (begin) and 1 (finished) with ndigits rounding
+        Compute progress, float between 0 (begin) and 1 (finished) with ndigits rounding.
         """
-        nll = 0#Number of leaves on the left
+        nll = 0  # Number of leaves on the left
 
         for ind1, pi in enumerate(self.current_node):
             nlli = pi
@@ -129,10 +160,7 @@ class RegularDecisionTree:
 
         return round(nll/self.number_leaves, ndigits)
 
-    def PlotData(self,
-                 valid_nodes,
-                 complete_graph_layout=True,
-                 plot=False):
+    def plot_data(self, valid_nodes, complete_graph_layout=True):
         """
         Draws decision tree
 
@@ -158,15 +186,15 @@ class RegularDecisionTree:
                     if up_nodes and not complete_graph_layout:
                         # Add positions to previous parent
                         p = up_nodes[-1]
-                        x = PositionParent(p, links, positions)
+                        x = parent_position(p, links, positions)
                         positions[p] = (x, y_positions[j+1])
-                        tree_plot_data.append({'type' : 'circle',
-                                               'cx' : x,
-                                               'cy' : y_positions[j+1],
-                                               'r' : 1,
-                                               'color' : [0, 0, 0],
-                                               'size' : 1,
-                                               'dash' : 'none'})
+                        tree_plot_data.append({'type': 'circle',
+                                               'cx': x,
+                                               'cy': y_positions[j+1],
+                                               'r': 1,
+                                               'color': [0, 0, 0],
+                                               'size': 1,
+                                               'dash': 'none'})
                     up_nodes.append(parent)
                 if complete_graph_layout:
                     if len(node) == len(self.np):
@@ -179,55 +207,54 @@ class RegularDecisionTree:
                     x = start_pos + offset
 
                     positions[node] = (x, y_positions[j])
-                    tree_plot_data.append({'type' : 'circle',
-                                           'cx' : x,
-                                           'cy' : y_positions[j],
-                                           'r' : 1,
-                                           'color' : [0, 0, 0],
-                                           'size' : 1,
-                                           'dash' : 'none'})
+                    tree_plot_data.append({'type': 'circle',
+                                           'cx': x,
+                                           'cy': y_positions[j],
+                                           'r': 1,
+                                           'color': [0, 0, 0],
+                                           'size': 1,
+                                           'dash': 'none'})
 
-                else: # Minimal layout graph
+                else:  # Minimal layout graph
                     if len(node) == len(self.np):
                         # Add position to all the leafs
                         x = i
                         positions[node] = (x, y_positions[j])
-                        tree_plot_data.append({'type' : 'circle',
-                                               'cx' : x,
-                                               'cy' : y_positions[j],
-                                               'r' : 1,
-                                               'color' : [0, 0, 0],
-                                               'size' : 1,
-                                               'dash' : 'none'})
+                        tree_plot_data.append({'type': 'circle',
+                                               'cx': x,
+                                               'cy': y_positions[j],
+                                               'r': 1,
+                                               'color': [0, 0, 0],
+                                               'size': 1,
+                                               'dash': 'none'})
 
             if not complete_graph_layout:
                 # Add position to the last parent of the line
                 p = up_nodes[-1]
-                x = PositionParent(p, links, positions)
+                x = parent_position(p, links, positions)
                 positions[p] = (x, y_positions[j+1])
-                tree_plot_data.append({'type' : 'circle',
-                                       'cx' : x,
-                                       'cy' : y_positions[j+1],
-                                       'r' : 1,
-                                       'color' : [0, 0, 0],
-                                       'size' : 1,
-                                       'dash' : 'none'})
+                tree_plot_data.append({'type': 'circle',
+                                       'cx': x,
+                                       'cy': y_positions[j+1],
+                                       'r': 1,
+                                       'color': [0, 0, 0],
+                                       'size': 1,
+                                       'dash': 'none'})
             j += 1
 
             nodes = up_nodes
             up_nodes = []
 
-        tree_plot_data.extend(CreateLinks(links, positions))
-
-        if plot:
-            Plot(tree_plot_data)
+        tree_plot_data.extend(plot_data_links(links, positions))
 
         return tree_plot_data
 
+
 class DecisionTree:
     """
-    Create a general decision tree object
+    Create a general decision tree object.
     """
+
     def __init__(self):
         self.current_node = []
         self._data = {}
@@ -241,7 +268,6 @@ class DecisionTree:
     current_depth = property(_get_current_depth)
 
     def _get_data(self):
-        
         return self._data
 
     def _set_data(self):
@@ -251,7 +277,11 @@ class DecisionTree:
 
     data = property(_get_data, _set_data)
 
+    @pep8_deprecated
     def NextNode(self, current_node_viability):
+        return self.next_node(current_node_viability)
+
+    def next_node(self, current_node_viability: bool):
         """
         Selects next node in decision tree if current one is valid
 
@@ -289,13 +319,13 @@ class DecisionTree:
                 ancestor = node in ancestors
                 if ancestor or not already_visited:
                     self._data[tuple(node)] = node_data
-#            print('node : ', self.current_node, 'ancestors', ancestors)
-#            self._data = {tuple(node) : _data[tuple(node)]
-#                          for node in ancestors + [self.current_node]}
         return self.current_node
 
-
+    @pep8_deprecated
     def SetCurrentNodeNumberPossibilities(self, np_node):
+        return self.set_current_node_number_possibilities(np_node)
+
+    def set_current_node_number_possibilities(self, np_node: List[int]):
         """
         Set number of nodes under the current node
         :param np_node: an integer representing the number of nodes under the current node
@@ -309,7 +339,11 @@ class DecisionTree:
 
         self.current_depth_np_known = True
 
+    @pep8_deprecated
     def SetCurrentNodeDataPossibilities(self, data_list):
+        return self.set_current_node_data_possibilities(data_list)
+
+    def set_current_node_data_possibilities(self, data_list):
         """
         Set number of nodes under the current node by giving a list of data
         The number of nodes under the current node will be the length of the data array
@@ -327,36 +361,41 @@ class DecisionTree:
             self._data[tuple(child)] = data
         self.current_depth_np_known = True
 
+    @pep8_deprecated
     def AlreadyVisited(self, node):
+        return self.already_visited(node)
+
+    def already_visited(self, node):
         booleans = [node[i] < self.current_node[i] for i in range(len(node[:self.current_depth]))]
         if any(booleans):
             return True
         return False
 
+    @pep8_deprecated
     def Ancestors(self, node=None):
+        return self.ancestors(node)
+
+    def ancestors(self, node=None):
         if node is None:
             node = self.current_node
-#        ancestors = [None]*(len(node)-1)
-#        for i in range(len(node)-1):
-#            ancestors[i] = node[:i+1]
         ancestors = [node[:i+1] for i in range(len(node)-1)]
         if ancestors:
             return ancestors
         return None
 
-def PositionParent(parent, links, positions):
+def parent_position(parent, links, positions):
     pos_children = [positions[lk[1]][0] for lk in links if parent in lk]
     pos_parent = (max(pos_children) + min(pos_children))/2
     return pos_parent
 
-def CreateLinks(links, positions):
+def plot_data_links(links, positions):
     link_plot_data = []
     for link in links:
         parent, node = link
         xp, yp = positions[parent]
         xn, yn = positions[node]
-        element = {'type' : 'line',
-                   'data' : [xp,
+        element = {'type': 'line',
+                   'data': [xp,
                              yp,
                              xn,
                              yn],
@@ -368,24 +407,4 @@ def CreateLinks(links, positions):
         link_plot_data.append(element)
     return link_plot_data
 
-def Plot(plot_data):
-    """
-    TODO Temporary function
-    In the future, use a PlotData package
-    """
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
 
-    for element in plot_data:
-        if element['type'] == 'circle':
-            ax.plot(element['cx'],
-                    element['cy'],
-                    'o',
-                    color=element['color'])
-
-        if element['type'] == 'line':
-            ax.plot([element['data'][0], element['data'][2]],
-                    [element['data'][1], element['data'][3]],
-                    color=element['color'],
-                    marker=element['marker'],
-                    linewidth=element['stroke_width'])
