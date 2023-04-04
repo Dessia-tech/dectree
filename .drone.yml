@@ -15,7 +15,7 @@ steps:
   - coverage json
   - python coverage.py 
   - coverage report
-  - cd doc
+  - cd ../doc
   - make html
 
 - name: develop
