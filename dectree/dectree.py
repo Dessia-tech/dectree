@@ -27,9 +27,10 @@ def pep8_deprecated(func):
 
 class RegularDecisionTree:
     """
-    Create a regular decision tree object
+    Create a regular decision tree object.
 
     :param np: number of possibilities at each depth
+    :type np: List[List[int]]
     """
 
     def __init__(self, np: List[List[int]]):
@@ -58,7 +59,14 @@ class RegularDecisionTree:
         return self.next_node(current_node_viability)
 
     def next_node(self, current_node_viability: bool):
-        """Selects next node in decision tree if current one is valid."""
+        """
+        Select next node in decision tree. If current node is not viable,
+        the next node can't be deeper.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes comming from the current one. False otherwise.
+        :type current_node_viability: bool
+        """
         if current_node_viability:
             self.current_depth += 1
 
@@ -88,9 +96,21 @@ class RegularDecisionTree:
     def NextSortedNode(self, current_node_viability):
         return self.next_sorted_node(current_node_viability)
 
-    def next_sorted_node(self, current_node_viability):
+    def next_sorted_node(self, current_node_viability: bool):
         """
-        TODO Docstring
+        Select next sorted node in decision tree. If current node is not
+        viable, the next node can't be deeper.
+
+        "Sorted" means that if each node on a level was assigned a value
+        between 1 and n, after selecting a node per level, the list would
+        be sorted in ascending order.
+
+        It can be used for problems where the order of the solutions don't
+        matter.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes comming from the current one. False otherwise.
+        :type current_node_viability: bool
         """
         not_sorted = True
         node = self.NextNode(current_node_viability)
@@ -109,7 +129,16 @@ class RegularDecisionTree:
 
     def next_unique_node(self, current_node_viability: bool):
         """
-        TODO Docstring
+        Select next unique node in decision tree. If current node is not
+        viable, the next node can't be deeper.
+
+        "Unique" means that if each node on a level was assigned a value
+        between 1 and n, after selecting a node per level, the list would
+        have no duplicate.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes comming from the current one. False otherwise.
+        :type current_node_viability: bool
         """
         not_unique = True
         node = self.NextNode(current_node_viability)
@@ -128,7 +157,19 @@ class RegularDecisionTree:
 
     def next_sorted_unique_node(self, current_node_viability: bool):
         """
-        TODO Docstring
+        Select next sorted and unique node in decision tree. If current node
+        is not viable, the next node can't be deeper.
+
+        "Sorted Unique" means that if each node on a level was assigned a value
+        between 1 and n, after selecting a node per level, the list would
+        be sorted in strict ascending order - with no duplicate.
+
+        It can be used for problems where the order of the solutions don't
+        matter.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes comming from the current one. False otherwise.
+        :type current_node_viability: bool
         """
         not_unique = True
         node = self.NextSortedNode(current_node_viability)
@@ -148,7 +189,11 @@ class RegularDecisionTree:
 
     def progress(self, ndigits: int = 3):
         """
-        Compute progress, float between 0 (begin) and 1 (finished) with ndigits rounding.
+        Compute progress, float between 0 (begin) and 1 (finished) with
+        ndigits rounding.
+
+        :param ndigits: Decimal rounding for the progress. Default value is 3.
+        :type ndigits: int, optional
         """
         nll = 0  # Number of leaves on the left
 
@@ -160,13 +205,17 @@ class RegularDecisionTree:
 
         return round(nll/self.number_leaves, ndigits)
 
-    def plot_data(self, valid_nodes, complete_graph_layout=True):
+    def plot_data(self, valid_nodes: List[List[int]],
+                  complete_graph_layout: bool = True):
         """
-        Draws decision tree
+        Draw decision tree.
 
         :param valid_nodes: List of tuples that represents nodes to draw
-        :param complete_graph_layout: Boolean
-        :param plot: Boolean to directly plot or not
+        :type valid_nodes: List[List[int]]
+        :param complete_graph_layout: If True, the extended graph layout will
+            be drawn. Otherwise, only a minimal graph layout will be drawn.
+            Default value is True.
+        :type complete_graph_layout: bool, optional
         """
         tree_plot_data = []
 
