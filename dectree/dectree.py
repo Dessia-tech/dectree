@@ -5,7 +5,7 @@ Decision trees classes.
 """
 
 import re
-from typing import List
+from typing import List, Tuple, Any
 import warnings
 import functools
 from copy import copy
@@ -406,7 +406,7 @@ class DecisionTree:
     def SetCurrentNodeDataPossibilities(self, data_list):
         return self.set_current_node_data_possibilities(data_list)
 
-    def set_current_node_data_possibilities(self, data_list):
+    def set_current_node_data_possibilities(self, data_list: List[Any]):
         """
         Set number of nodes possibilities under the current node by giving a list of data
         The number of nodes possibilities under the current node will be the length of the data array
@@ -429,7 +429,7 @@ class DecisionTree:
     def AlreadyVisited(self, node):
         return self.already_visited(node)
 
-    def already_visited(self, node):
+    def already_visited(self, node: Tuple[int]):
         """
         Use to know if a node was already visited in the previous steps of the decision tree
         :param node: a tuple that represent a node of the decision tree
@@ -444,7 +444,7 @@ class DecisionTree:
     def Ancestors(self, node=None):
         return self.ancestors(node)
 
-    def ancestors(self, node=None):
+    def ancestors(self, node: Tuple[int] = None):
         """
         Use to know the ancestors of a node (the nodes of the upper levels).
         :param node: a tuple that represent a node of the decision tree
