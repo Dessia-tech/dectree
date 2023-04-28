@@ -343,7 +343,8 @@ class DecisionTree:
 
     def next_node(self, current_node_viability: bool):
         """
-        Selects next node in decision tree if current one is valid
+        SSelect next node in decision tree. If current node is not viable,
+        the next node can't be deeper.
 
         :param current_node_viability: True if it is allowed to visit deeper
             nodes comming from the current one. False otherwise.
@@ -445,7 +446,7 @@ class DecisionTree:
 
     def ancestors(self, node=None):
         """
-        Use to know the ancestors of the node (the nodes of the upper levels).
+        Use to know the ancestors of a node (the nodes of the upper levels).
         :param node: a tuple that represent a node of the decision tree
         :type node: Tuple[int]
         """
