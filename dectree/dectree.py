@@ -343,7 +343,7 @@ class DecisionTree:
 
     def next_node(self, current_node_viability: bool):
         """
-        SSelect next node in decision tree. If current node is not viable,
+        Select next node in decision tree. If current node is not viable,
         the next node can't be deeper.
 
         :param current_node_viability: True if it is allowed to visit deeper
