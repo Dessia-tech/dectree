@@ -29,7 +29,7 @@ class RegularDecisionTree:
     """
     Create a regular decision tree object.
 
-    :param np: number of possibilities at each depth
+    :param np: number of possibilities at each depth.
     :type np: List[List[int]]
     """
 
@@ -64,7 +64,7 @@ class RegularDecisionTree:
         the next node can't be deeper.
 
         :param current_node_viability: True if it is allowed to visit deeper
-            nodes comming from the current one. False otherwise.
+            nodes coming from the current one. False otherwise.
         :type current_node_viability: bool
         """
         if current_node_viability:
@@ -101,14 +101,16 @@ class RegularDecisionTree:
         Select next sorted node in decision tree. If current node is not
         viable, the next node can't be deeper.
 
-        "Sorted" means that the node selected can only have an index value superior or equal
-        at the index value of the node selected in the precedent level.
-        For example, if the actual node is (0, 2, 4) and if the choice for the next level is between 5 possibilities,
-        the next sorted node will be (0, 2, 4, 4)
+        "Sorted" means that the node selected will only have an index value
+        superior or equal to the index value of the previous node.
+        For example, if the actual node is (0, 2, 4) the next depth has
+        5 possibilities, the next sorted node will be (0, 2, 4, 4).
 
-        It can be used for problems where each level of decision tree have the same possibilities
-        and where the order of the solutions don't matter. (For example, with index values, solution (0, 1, 2)
-        is equal to solution (2 ,0, 1) and solution (1, 2, 0))
+        It can be used for solving problems where each level of the tree have
+        the same number of possibilities and where the order of a solution
+        doesn't matter.
+        Thus, the nodes (0, 1, 2), (2, 0, 1) and (1, 2, 0) lead to the same
+        solution.
 
         :param current_node_viability: True if it is allowed to visit deeper
             nodes coming from the current one. False otherwise.
@@ -134,14 +136,13 @@ class RegularDecisionTree:
         Select next unique node in decision tree. If current node is not
         viable, the next node can't be deeper.
 
-        "Unique" means that the node selected can only have an index value different at the index values
-        of the nodes selected in the precedent levels.
-        For example, if the actual node is (0, 2, 4) and if the choice for the next level is between 5 possibilities,
-        the next unique node will be (0, 2, 4, 1)
+        "Unique" means that the node selected will only have an index value
+        different from the index values of the previous node.
+        For example, if the actual node is (0, 2, 4) and the next depth has
+        5 possibilities, the next sorted node will be (0, 2, 4, 1).
 
-        It can be used for problems where each level of decision tree have the same possibilities,
-        and where each choice by level is unique.
-        ( if you choose the second choice in first level, you can't choose the second choice in second level).
+        It can be used for urn-like problems where the balls are not placed
+        back once they are drawn.
 
         :param current_node_viability: True if it is allowed to visit deeper
             nodes coming from the current one. False otherwise.
@@ -167,16 +168,15 @@ class RegularDecisionTree:
         Select next sorted and unique node in decision tree. If current node
         is not viable, the next node can't be deeper.
 
-        "Sorted Unique" means that the node selected can only have an index value different and superior or equal
-        at the index values of the nodes selected in the precedent levels
-        For example, if the actual node is (0, 2, 3) and if the choice for the next level is between 5 possibilities,
-        the next sorted unique node will be (0, 2, 3, 4)
+        "Sorted Unique" means that the node selected will only have an index
+        value striclty superior to the index values of the previous node.
+        For example, if the actual node is (0, 2, 3) and the next depth has
+        5 possibilities, the next sorted node will be (0, 2, 3, 4).
 
-        It can be used for problems where each level of decision tree have the same possibilities,
-        where the order of the solutions don't matter,
-        and where each choice by level is unique.(For example, with index values, solution (0, 1, 2)
-        is equal to solution (2 ,0, 1) and solution (1, 2, 0), and the choice (2, 2, 2) is not possible because
-        the second choice can be taken once)
+        It can be used for solving problems where each level of the tree have
+        the same number of possibilities, where the order of a solution
+        doesn't matter and where once a node is drawn it can't be drawn
+        again.
 
         :param current_node_viability: True if it is allowed to visit deeper
             nodes coming from the current one. False otherwise.
@@ -221,7 +221,7 @@ class RegularDecisionTree:
         """
         Draw decision tree.
 
-        :param valid_nodes: List of tuples that represents nodes to draw
+        :param valid_nodes: List of tuples that represents nodes to draw.
         :type valid_nodes: List[List[int]]
         :param complete_graph_layout: If True, the extended graph layout will
             be drawn. Otherwise, only a minimal graph layout will be drawn.
@@ -347,7 +347,7 @@ class DecisionTree:
         the next node can't be deeper.
 
         :param current_node_viability: True if it is allowed to visit deeper
-            nodes comming from the current one. False otherwise.
+            nodes coming from the current one. False otherwise.
         :type current_node_viability: bool
         """
         if (not current_node_viability) or (self.np[self.current_depth] == 0):
@@ -388,10 +388,13 @@ class DecisionTree:
     def SetCurrentNodeNumberPossibilities(self, np_node):
         return self.set_current_node_number_possibilities(np_node)
 
-    def set_current_node_number_possibilities(self, np_node: List[int]):
+    def set_current_node_number_possibilities(self, np_node: int):
         """
-        Set number of nodes possibilities under the current node
-        :param np_node: an integer representing the number of nodes under the current node
+        Set number of nodes possibilities under the current node.
+
+        :param np_node: An integer representing the number of nodes under
+            the current node.
+        :type np_node: int
         """
         if np_node < 0:
             raise ValueError('Number of possibilities must be positive')
@@ -408,9 +411,12 @@ class DecisionTree:
 
     def set_current_node_data_possibilities(self, data_list: List[Any]):
         """
-        Set number of nodes possibilities under the current node by giving a list of data
-        The number of nodes possibilities under the current node will be the length of the data array
-        :param data_list: a list or tuple of data for each node under
+        Set number of nodes possibilities under the current node by giving a
+        list of data. The number of nodes possibilities under the current node
+        will be the length of the data array.
+
+        :param data_list: A list or tuple of data for each node under the
+            current one.
         :type data_list: List[Any]
         """
         np_node = len(data_list)
@@ -421,7 +427,6 @@ class DecisionTree:
 
         for i, data in enumerate(data_list):
             child = self.current_node + [i]
-#            print(child, tuple(child), data)
             self._data[tuple(child)] = data
         self.current_depth_np_known = True
 
@@ -431,11 +436,13 @@ class DecisionTree:
 
     def already_visited(self, node: Tuple[int]):
         """
-        Use to know if a node was already visited in the previous steps of the decision tree
-        :param node: a tuple that represent a node of the decision tree
+        Check if a node has already been visited by the decision tree.
+
+        :param node: A tuple that represents a node of the decision tree.
         :type node: Tuple[int]
         """
-        booleans = [node[i] < self.current_node[i] for i in range(len(node[:self.current_depth]))]
+        booleans = [node[i] < self.current_node[i]
+                    for i in range(len(node[:self.current_depth]))]
         if any(booleans):
             return True
         return False
@@ -446,9 +453,11 @@ class DecisionTree:
 
     def ancestors(self, node: Tuple[int] = None):
         """
-        Use to know the ancestors of a node (the nodes of the upper levels).
-        :param node: a tuple that represent a node of the decision tree
-        :type node: Tuple[int]
+        Return the ancestors of a node, i.e. the nodes of the upper levels.
+
+        :param node: A tuple that represents a node of the decision tree.
+            Default value is None, pointing to the current node.
+        :type node: Tuple[int], optional
         """
         if node is None:
             node = self.current_node
@@ -457,10 +466,12 @@ class DecisionTree:
             return ancestors
         return None
 
+
 def parent_position(parent, links, positions):
     pos_children = [positions[lk[1]][0] for lk in links if parent in lk]
     pos_parent = (max(pos_children) + min(pos_children))/2
     return pos_parent
+
 
 def plot_data_links(links, positions):
     link_plot_data = []
