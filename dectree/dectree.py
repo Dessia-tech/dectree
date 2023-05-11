@@ -30,10 +30,10 @@ class RegularDecisionTree:
     Create a regular decision tree object.
 
     :param np: number of possibilities at each depth.
-    :type np: List[List[int]]
+    :type np: List[int]
     """
 
-    def __init__(self, np: List[List[int]]):
+    def __init__(self, np: List[int]):
         # Checking consistency
         if min(np) < 1:
             raise ValueError('number of possibilities must be strictly positive')
