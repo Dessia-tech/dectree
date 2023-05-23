@@ -12,6 +12,7 @@ from copy import copy
 from operator import itemgetter
 import numpy as npy
 import matplotlib.pyplot as plt
+import graphviz
 
 warnings.simplefilter('once', DeprecationWarning)
 
@@ -32,10 +33,10 @@ class RegularDecisionTree:
     :param np: number of possibilities at each depth
     """
 
-    def __init__(self, np: List[List[int]]):
+    def __init__(self, np: List[int]):
         # Checking consistency
-        if min(np) < 1:
-            raise ValueError('number of possibilities must be strictly positive')
+        if any(x < 1 for x in np):
+            raise ValueError('number of possibilities must be strictly positive.')
  
         self.np = np
         self.n = len(np)
@@ -46,7 +47,7 @@ class RegularDecisionTree:
         # total number of leaves on tree
         self.number_leaves = 1
         for npi in np:
-            self.number_leaves *= (npi)
+            self.number_leaves *= npi
 
     def _get_current_node(self):
         return self._target_node[:self.current_depth+1]
@@ -160,7 +161,33 @@ class RegularDecisionTree:
 
         return round(nll/self.number_leaves, ndigits)
 
-    def plot_data(self, valid_nodes, complete_graph_layout=True):
+    def visualize_tree(self):
+        dot = graphviz.Digraph()
+        node_id = 0
+
+        def add_node(parent_id, depth):
+            nonlocal node_id
+
+            if depth == self.n:
+                return
+
+            for i in range(self.np[depth]):
+                current_node_id = node_id
+                node_id += 1
+                node_label = f"Depth {depth}, Node {i}"
+
+                dot.node(str(current_node_id), label=node_label)
+
+                if parent_id is not None:
+                    dot.edge(str(parent_id), str(current_node_id))
+
+                add_node(current_node_id, depth + 1)
+
+        add_node(None, 0)
+
+        dot.render('decision_tree', format='png', view=True)
+
+    def _to_plot_data(self, valid_nodes, complete_graph_layout=True):
         """
         Draws decision tree
 
@@ -248,6 +275,30 @@ class RegularDecisionTree:
         tree_plot_data.extend(plot_data_links(links, positions))
 
         return tree_plot_data
+
+    def plot_tree_data(self, valid_nodes):
+
+        datas = self._to_plot_data(valid_nodes)
+
+        # Plot circles
+        circle_data = [data for data in datas if data['type'] == 'circle']
+        circle_x_coords = [data['cx'] for data in circle_data]
+        circle_y_coords = [data['cy'] for data in circle_data]
+        plt.scatter(circle_x_coords, circle_y_coords, marker='o', color='black')
+
+        # Plot lines
+        line_data = [data for data in datas if data['type'] == 'line']
+        for data in line_data:
+            x1, y1, x2, y2 = data['data']
+            plt.plot([x1, x2], [y1, y2], color='black', linewidth=data['stroke_width'])
+
+        # Set plot limits
+        plt.xlim(min(circle_x_coords + [min(data['data'][0], data['data'][2]) for data in line_data]) - 1,
+                 max(circle_x_coords + [max(data['data'][0], data['data'][2]) for data in line_data]) + 1)
+        plt.ylim(min(circle_y_coords + [min(data['data'][1], data['data'][3]) for data in line_data]) - 1,
+                 max(circle_y_coords + [max(data['data'][1], data['data'][3]) for data in line_data]) + 1)
+
+        plt.show(block=True)
 
 
 class DecisionTree:
