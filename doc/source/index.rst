@@ -15,7 +15,7 @@ Welcome to dectree's documentation!
    about_the_package
    getting_started
    user_guide
-   roadmap_and_current_limitations
+   road_map_and_current_limitations
 
 Indices and tables
 ==================

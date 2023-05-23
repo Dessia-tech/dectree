@@ -103,7 +103,7 @@ class RegularDecisionTree:
 
         "Sorted" means that the node selected will only have an index value
         superior or equal to the index value of the previous node.
-        For example, if the actual node is (0, 2, 4) the next depth has
+        For example, if the actual node is (0, 2, 4) and the next depth has
         5 possibilities, the next sorted node will be (0, 2, 4, 4).
 
         It can be used for solving problems where each level of the tree have
