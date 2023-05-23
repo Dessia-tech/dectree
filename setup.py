@@ -64,4 +64,4 @@ setup(name='dectree',
       author_email='root@dessia.tech',
       packages=['dectree'],
       install_requires=['numpy',
-                        'matplotlib'])
+                        'matplotlib', 'graphviz'])
