@@ -12,7 +12,6 @@ from copy import copy
 from operator import itemgetter
 import numpy as npy
 import matplotlib.pyplot as plt
-import graphviz
 
 warnings.simplefilter('once', DeprecationWarning)
 
@@ -161,32 +160,6 @@ class RegularDecisionTree:
 
         return round(nll/self.number_leaves, ndigits)
 
-    def visualize_tree(self):
-        dot = graphviz.Digraph()
-        node_id = 0
-
-        def add_node(parent_id, depth):
-            nonlocal node_id
-
-            if depth == self.n:
-                return
-
-            for i in range(self.np[depth]):
-                current_node_id = node_id
-                node_id += 1
-                node_label = f"Depth {depth}, Node {i}"
-
-                dot.node(str(current_node_id), label=node_label)
-
-                if parent_id is not None:
-                    dot.edge(str(parent_id), str(current_node_id))
-
-                add_node(current_node_id, depth + 1)
-
-        add_node(None, 0)
-
-        dot.render('decision_tree', format='png', view=True)
-
     def _to_plot_data(self, valid_nodes, complete_graph_layout=True):
         """
         Draws decision tree
@@ -276,12 +249,16 @@ class RegularDecisionTree:
 
         return tree_plot_data
 
-    def plot_tree_data(self, valid_nodes):
+    def plot_tree_data(self, valid_nodes, limit=100):
 
         datas = self._to_plot_data(valid_nodes)
+        circle_data = [data for data in datas if data['type'] == 'circle']
+
+        if limit is not None and len(circle_data) > limit:
+            print(f"Data points exceed the limit. Skipping plotting. (Limit: {limit}, Data points: {len(datas)})")
+            return
 
         # Plot circles
-        circle_data = [data for data in datas if data['type'] == 'circle']
         circle_x_coords = [data['cx'] for data in circle_data]
         circle_y_coords = [data['cy'] for data in circle_data]
         plt.scatter(circle_x_coords, circle_y_coords, marker='o', color='black')
@@ -313,10 +290,9 @@ class DecisionTree:
         self.np = []
         self.current_depth_np_known = False
 
-    def _get_current_depth(self):
+    @property
+    def current_depth(self):
         return len(self.current_node)
-
-    current_depth = property(_get_current_depth)
 
     def _get_data(self):
         return self._data
