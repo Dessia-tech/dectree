@@ -15,11 +15,13 @@ import matplotlib.pyplot as plt
 
 warnings.simplefilter('once', DeprecationWarning)
 
+
 def pep8_deprecated(func):
     new_name = re.sub(r'(?<!^)(?=[A-Z])', '_', func.__name__).lower()
+
     @functools.wraps(func)
     def new_func(*args, **kwargs):
-        warnings.warn(f"{func.__name__} is deprecated and will be remove in version 0.3, use {new_name} instead",
+        warnings.warn(f"{func.__name__} is deprecated and will be remove in future version, use {new_name} instead",
                       DeprecationWarning)
         return func(*args, **kwargs)
     return new_func
@@ -117,14 +119,14 @@ class RegularDecisionTree:
         :type current_node_viability: bool
         """
         not_sorted = True
-        node = self.NextNode(current_node_viability)
+        node = self.next_node(current_node_viability)
         while not_sorted:
             if node is None:
                 return node
             if sorted(node) == node:
                 not_sorted = False
             else:
-                node = self.NextNode(False)
+                node = self.next_node(False)
         return node
 
     @pep8_deprecated
@@ -149,14 +151,14 @@ class RegularDecisionTree:
         :type current_node_viability: bool
         """
         not_unique = True
-        node = self.NextNode(current_node_viability)
+        node = self.next_node(current_node_viability)
         while not_unique:
             if node is None:
                 return node
             if not node[-1] in node[:-1]:
                 not_unique = False
             else:
-                node = self.NextNode(False)
+                node = self.next_node(False)
         return node
 
     @pep8_deprecated
@@ -169,7 +171,7 @@ class RegularDecisionTree:
         is not viable, the next node can't be deeper.
 
         "Sorted Unique" means that the node selected will only have an index
-        value striclty superior to the index values of the previous node.
+        value strictly superior to the index values of the previous node.
         For example, if the actual node is (0, 2, 3) and the next depth has
         5 possibilities, the next sorted node will be (0, 2, 3, 4).
 
@@ -196,7 +198,7 @@ class RegularDecisionTree:
 
     @pep8_deprecated
     def Progress(self, ndigits=3):
-        return self.progress()
+        return self.progress(ndigits=ndigits)
 
     def progress(self, ndigits: int = 3):
         """
@@ -263,7 +265,8 @@ class RegularDecisionTree:
                     else:
                         r = range(len(node))
                         offset = (npy.prod(self.np[-j:]) - 1)/2
-                    start_pos = sum([npy.prod(self.np[k+1:])*node[k] for k in r])
+                    start_pos = sum([npy.prod(self.np[k+1:])*node[k]
+                                     for k in r])
                     x = start_pos + offset
 
                     positions[node] = (x, y_positions[j])
@@ -480,16 +483,11 @@ def plot_data_links(links, positions):
         xp, yp = positions[parent]
         xn, yn = positions[node]
         element = {'type': 'line',
-                   'data': [xp,
-                             yp,
-                             xn,
-                             yn],
-                   'color' : [0, 0, 0],
-                   'dash' : 'none',
-                   'stroke_width' : 1,
-                   'marker' : '',
-                   'size' : 1}
+                   'data': [xp, yp, xn, yn],
+                   'color': [0, 0, 0],
+                   'dash': 'none',
+                   'stroke_width': 1,
+                   'marker': '',
+                   'size': 1}
         link_plot_data.append(element)
     return link_plot_data
-
-
