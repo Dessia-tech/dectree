@@ -10,6 +10,8 @@ maintenance:
 
 |axel ringhausen| Axel Ringhausen
 
+|younes belabid| Younes Belabid
+
 .. |axel ringhausen| image:: images/axel_ringhausen.jpeg
   :width: 100
   :target: https://github.com/AxelRinghausen
@@ -21,3 +23,7 @@ maintenance:
 .. |ghislain jezequel| image:: images/ghislain_jezequel.png
   :width: 100
   :target: https://github.com/GhislainJ
+
+.. |younes belabid| image:: images/younes_belabid.png
+  :width: 100
+  :target: https://github.com/younesdessia
