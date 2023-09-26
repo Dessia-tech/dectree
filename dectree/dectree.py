@@ -5,7 +5,7 @@ Decision trees classes.
 """
 
 import re
-from typing import List
+from typing import List, Tuple, Any
 import warnings
 import functools
 from copy import copy
@@ -15,11 +15,13 @@ import matplotlib.pyplot as plt
 
 warnings.simplefilter('once', DeprecationWarning)
 
+
 def pep8_deprecated(func):
     new_name = re.sub(r'(?<!^)(?=[A-Z])', '_', func.__name__).lower()
+
     @functools.wraps(func)
     def new_func(*args, **kwargs):
-        warnings.warn(f"{func.__name__} is deprecated and will be remove in version 0.3, use {new_name} instead",
+        warnings.warn(f"{func.__name__} is deprecated and will be remove in future version, use {new_name} instead",
                       DeprecationWarning)
         return func(*args, **kwargs)
     return new_func
@@ -27,12 +29,13 @@ def pep8_deprecated(func):
 
 class RegularDecisionTree:
     """
-    Create a regular decision tree object
+    Create a regular decision tree object.
 
-    :param np: number of possibilities at each depth
+    :param np: number of possibilities at each depth.
+    :type np: List[int]
     """
 
-    def __init__(self, np: List[List[int]]):
+    def __init__(self, np: List[int]):
         # Checking consistency
         if min(np) < 1:
             raise ValueError('number of possibilities must be strictly positive')
@@ -58,7 +61,14 @@ class RegularDecisionTree:
         return self.next_node(current_node_viability)
 
     def next_node(self, current_node_viability: bool):
-        """Selects next node in decision tree if current one is valid."""
+        """
+        Select next node in decision tree. If current node is not viable,
+        the next node can't be deeper.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes coming from the current one. False otherwise.
+        :type current_node_viability: bool
+        """
         if current_node_viability:
             self.current_depth += 1
 
@@ -88,19 +98,35 @@ class RegularDecisionTree:
     def NextSortedNode(self, current_node_viability):
         return self.next_sorted_node(current_node_viability)
 
-    def next_sorted_node(self, current_node_viability):
+    def next_sorted_node(self, current_node_viability: bool):
         """
-        TODO Docstring
+        Select next sorted node in decision tree. If current node is not
+        viable, the next node can't be deeper.
+
+        "Sorted" means that the node selected will only have an index value
+        superior or equal to the index value of the previous node.
+        For example, if the actual node is (0, 2, 4) and the next depth has
+        5 possibilities, the next sorted node will be (0, 2, 4, 4).
+
+        It can be used for solving problems where each level of the tree have
+        the same number of possibilities and where the order of a solution
+        doesn't matter.
+        Thus, the nodes (0, 1, 2), (2, 0, 1) and (1, 2, 0) lead to the same
+        solution.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes coming from the current one. False otherwise.
+        :type current_node_viability: bool
         """
         not_sorted = True
-        node = self.NextNode(current_node_viability)
+        node = self.next_node(current_node_viability)
         while not_sorted:
             if node is None:
                 return node
             if sorted(node) == node:
                 not_sorted = False
             else:
-                node = self.NextNode(False)
+                node = self.next_node(False)
         return node
 
     @pep8_deprecated
@@ -109,17 +135,30 @@ class RegularDecisionTree:
 
     def next_unique_node(self, current_node_viability: bool):
         """
-        TODO Docstring
+        Select next unique node in decision tree. If current node is not
+        viable, the next node can't be deeper.
+
+        "Unique" means that the node selected will only have an index value
+        different from the index values of the previous node.
+        For example, if the actual node is (0, 2, 4) and the next depth has
+        5 possibilities, the next sorted node will be (0, 2, 4, 1).
+
+        It can be used for urn-like problems where the balls are not placed
+        back once they are drawn.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes coming from the current one. False otherwise.
+        :type current_node_viability: bool
         """
         not_unique = True
-        node = self.NextNode(current_node_viability)
+        node = self.next_node(current_node_viability)
         while not_unique:
             if node is None:
                 return node
             if not node[-1] in node[:-1]:
                 not_unique = False
             else:
-                node = self.NextNode(False)
+                node = self.next_node(False)
         return node
 
     @pep8_deprecated
@@ -128,7 +167,22 @@ class RegularDecisionTree:
 
     def next_sorted_unique_node(self, current_node_viability: bool):
         """
-        TODO Docstring
+        Select next sorted and unique node in decision tree. If current node
+        is not viable, the next node can't be deeper.
+
+        "Sorted Unique" means that the node selected will only have an index
+        value strictly superior to the index values of the previous node.
+        For example, if the actual node is (0, 2, 3) and the next depth has
+        5 possibilities, the next sorted node will be (0, 2, 3, 4).
+
+        It can be used for solving problems where each level of the tree have
+        the same number of possibilities, where the order of a solution
+        doesn't matter and where once a node is drawn it can't be drawn
+        again.
+
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes coming from the current one. False otherwise.
+        :type current_node_viability: bool
         """
         not_unique = True
         node = self.NextSortedNode(current_node_viability)
@@ -144,11 +198,15 @@ class RegularDecisionTree:
 
     @pep8_deprecated
     def Progress(self, ndigits=3):
-        return self.progress()
+        return self.progress(ndigits=ndigits)
 
     def progress(self, ndigits: int = 3):
         """
-        Compute progress, float between 0 (begin) and 1 (finished) with ndigits rounding.
+        Compute progress, float between 0 (begin) and 1 (finished) with
+        ndigits rounding.
+
+        :param ndigits: Decimal rounding for the progress. Default value is 3.
+        :type ndigits: int, optional
         """
         nll = 0  # Number of leaves on the left
 
@@ -160,13 +218,17 @@ class RegularDecisionTree:
 
         return round(nll/self.number_leaves, ndigits)
 
-    def plot_data(self, valid_nodes, complete_graph_layout=True):
+    def plot_data(self, valid_nodes: List[List[int]],
+                  complete_graph_layout: bool = True):
         """
-        Draws decision tree
+        Draw decision tree.
 
-        :param valid_nodes: List of tuples that represents nodes to draw
-        :param complete_graph_layout: Boolean
-        :param plot: Boolean to directly plot or not
+        :param valid_nodes: List of tuples that represents nodes to draw.
+        :type valid_nodes: List[List[int]]
+        :param complete_graph_layout: If True, the extended graph layout will
+            be drawn. Otherwise, only a minimal graph layout will be drawn.
+            Default value is True.
+        :type complete_graph_layout: bool, optional
         """
         tree_plot_data = []
 
@@ -203,7 +265,8 @@ class RegularDecisionTree:
                     else:
                         r = range(len(node))
                         offset = (npy.prod(self.np[-j:]) - 1)/2
-                    start_pos = sum([npy.prod(self.np[k+1:])*node[k] for k in r])
+                    start_pos = sum([npy.prod(self.np[k+1:])*node[k]
+                                     for k in r])
                     x = start_pos + offset
 
                     positions[node] = (x, y_positions[j])
@@ -283,9 +346,12 @@ class DecisionTree:
 
     def next_node(self, current_node_viability: bool):
         """
-        Selects next node in decision tree if current one is valid
+        Select next node in decision tree. If current node is not viable,
+        the next node can't be deeper.
 
-        :param current_node_viability: boolean
+        :param current_node_viability: True if it is allowed to visit deeper
+            nodes coming from the current one. False otherwise.
+        :type current_node_viability: bool
         """
         if (not current_node_viability) or (self.np[self.current_depth] == 0):
             # Node is a leaf | node is not viable
@@ -325,10 +391,13 @@ class DecisionTree:
     def SetCurrentNodeNumberPossibilities(self, np_node):
         return self.set_current_node_number_possibilities(np_node)
 
-    def set_current_node_number_possibilities(self, np_node: List[int]):
+    def set_current_node_number_possibilities(self, np_node: int):
         """
-        Set number of nodes under the current node
-        :param np_node: an integer representing the number of nodes under the current node
+        Set number of nodes possibilities under the current node.
+
+        :param np_node: An integer representing the number of nodes under
+            the current node.
+        :type np_node: int
         """
         if np_node < 0:
             raise ValueError('Number of possibilities must be positive')
@@ -343,11 +412,15 @@ class DecisionTree:
     def SetCurrentNodeDataPossibilities(self, data_list):
         return self.set_current_node_data_possibilities(data_list)
 
-    def set_current_node_data_possibilities(self, data_list):
+    def set_current_node_data_possibilities(self, data_list: List[Any]):
         """
-        Set number of nodes under the current node by giving a list of data
-        The number of nodes under the current node will be the length of the data array
-        :param data_list: a list or tuple of data for each node under
+        Set number of nodes possibilities under the current node by giving a
+        list of data. The number of nodes possibilities under the current node
+        will be the length of the data array.
+
+        :param data_list: A list or tuple of data for each node under the
+            current one.
+        :type data_list: List[Any]
         """
         np_node = len(data_list)
         try:
@@ -357,7 +430,6 @@ class DecisionTree:
 
         for i, data in enumerate(data_list):
             child = self.current_node + [i]
-#            print(child, tuple(child), data)
             self._data[tuple(child)] = data
         self.current_depth_np_known = True
 
@@ -365,8 +437,15 @@ class DecisionTree:
     def AlreadyVisited(self, node):
         return self.already_visited(node)
 
-    def already_visited(self, node):
-        booleans = [node[i] < self.current_node[i] for i in range(len(node[:self.current_depth]))]
+    def already_visited(self, node: Tuple[int]):
+        """
+        Check if a node has already been visited by the decision tree.
+
+        :param node: A tuple that represents a node of the decision tree.
+        :type node: Tuple[int]
+        """
+        booleans = [node[i] < self.current_node[i]
+                    for i in range(len(node[:self.current_depth]))]
         if any(booleans):
             return True
         return False
@@ -375,7 +454,14 @@ class DecisionTree:
     def Ancestors(self, node=None):
         return self.ancestors(node)
 
-    def ancestors(self, node=None):
+    def ancestors(self, node: Tuple[int] = None):
+        """
+        Return the ancestors of a node, i.e. the nodes of the upper levels.
+
+        :param node: A tuple that represents a node of the decision tree.
+            Default value is None, pointing to the current node.
+        :type node: Tuple[int], optional
+        """
         if node is None:
             node = self.current_node
         ancestors = [node[:i+1] for i in range(len(node)-1)]
@@ -383,10 +469,12 @@ class DecisionTree:
             return ancestors
         return None
 
+
 def parent_position(parent, links, positions):
     pos_children = [positions[lk[1]][0] for lk in links if parent in lk]
     pos_parent = (max(pos_children) + min(pos_children))/2
     return pos_parent
+
 
 def plot_data_links(links, positions):
     link_plot_data = []
@@ -395,16 +483,11 @@ def plot_data_links(links, positions):
         xp, yp = positions[parent]
         xn, yn = positions[node]
         element = {'type': 'line',
-                   'data': [xp,
-                             yp,
-                             xn,
-                             yn],
-                   'color' : [0, 0, 0],
-                   'dash' : 'none',
-                   'stroke_width' : 1,
-                   'marker' : '',
-                   'size' : 1}
+                   'data': [xp, yp, xn, yn],
+                   'color': [0, 0, 0],
+                   'dash': 'none',
+                   'stroke_width': 1,
+                   'marker': '',
+                   'size': 1}
         link_plot_data.append(element)
     return link_plot_data
-
-

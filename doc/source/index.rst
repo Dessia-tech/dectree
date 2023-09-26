@@ -10,13 +10,14 @@ Welcome to dectree's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
-.. autoclass:: dectree.RegularDecisionTree
-   :members:
-
-.. autoclass:: dectree.DecisionTree
-   :members:
-
+   about_dessia
+   authors
+   about_the_package
+   getting_started
+   user_guide
+   road_map_and_current_limitations
+   tutorials
+   glossary
 
 Indices and tables
 ==================
