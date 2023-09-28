@@ -37,8 +37,8 @@ class RegularDecisionTree:
 
     def __init__(self, np: List[int]):
         # Checking consistency
-        if min(np) < 1:
-            raise ValueError('number of possibilities must be strictly positive')
+        if any(x < 1 for x in np):
+            raise ValueError('number of possibilities must be strictly positive.')
  
         self.np = np
         self.n = len(np)
@@ -49,7 +49,7 @@ class RegularDecisionTree:
         # total number of leaves on tree
         self.number_leaves = 1
         for npi in np:
-            self.number_leaves *= (npi)
+            self.number_leaves *= npi
 
     def _get_current_node(self):
         return self._target_node[:self.current_depth+1]
@@ -312,6 +312,34 @@ class RegularDecisionTree:
 
         return tree_plot_data
 
+    def plot_tree_data(self, valid_nodes, limit=100):
+
+        datas = self._to_plot_data(valid_nodes)
+        circle_data = [data for data in datas if data['type'] == 'circle']
+
+        if limit is not None and len(circle_data) > limit:
+            print(f"Data points exceed the limit. Skipping plotting. (Limit: {limit}, Data points: {len(datas)})")
+            return
+
+        # Plot circles
+        circle_x_coords = [data['cx'] for data in circle_data]
+        circle_y_coords = [data['cy'] for data in circle_data]
+        plt.scatter(circle_x_coords, circle_y_coords, marker='o', color='black')
+
+        # Plot lines
+        line_data = [data for data in datas if data['type'] == 'line']
+        for data in line_data:
+            x1, y1, x2, y2 = data['data']
+            plt.plot([x1, x2], [y1, y2], color='black', linewidth=data['stroke_width'])
+
+        # Set plot limits
+        plt.xlim(min(circle_x_coords + [min(data['data'][0], data['data'][2]) for data in line_data]) - 1,
+                 max(circle_x_coords + [max(data['data'][0], data['data'][2]) for data in line_data]) + 1)
+        plt.ylim(min(circle_y_coords + [min(data['data'][1], data['data'][3]) for data in line_data]) - 1,
+                 max(circle_y_coords + [max(data['data'][1], data['data'][3]) for data in line_data]) + 1)
+
+        plt.show(block=True)
+
 
 class DecisionTree:
     """
@@ -325,10 +353,9 @@ class DecisionTree:
         self.np = []
         self.current_depth_np_known = False
 
-    def _get_current_depth(self):
+    @property
+    def current_depth(self):
         return len(self.current_node)
-
-    current_depth = property(_get_current_depth)
 
     def _get_data(self):
         return self._data
